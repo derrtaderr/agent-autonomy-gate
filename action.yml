@@ -1,0 +1,14 @@
+name: earn-autonomy
+description: Gate AI-generated output on deterministic rules + an LLM rubric, and track earned autonomy.
+inputs:
+  input:   { description: Path to the input file (text for content, JSON for outbound), required: true }
+  config:  { description: Path to the eval config JSON, required: true }
+  pack:    { description: Pack id (content|outbound), required: false, default: content }
+  runlog:  { description: Path to the run log, required: false, default: .eval-runs.json }
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with: { node-version: '20' }
+    - shell: bash
+      run: npx --yes earn-autonomy check "${{ inputs.input }}" --config "${{ inputs.config }}" --pack "${{ inputs.pack }}" --runlog "${{ inputs.runlog }}" --json

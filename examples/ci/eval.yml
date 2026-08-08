@@ -1,0 +1,15 @@
+# examples/ci/eval.yml — copy into .github/workflows/ in a consumer repo
+name: eval
+on: [pull_request]
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: derrtaderr/earn-autonomy@v0
+        with:
+          input: drafts/message.json
+          config: earn-autonomy.config.json
+          pack: outbound
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
