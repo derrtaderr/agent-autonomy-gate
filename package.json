@@ -6,10 +6,13 @@
   "license": "MIT",
   "bin": { "earn-autonomy": "dist/core/cli/index.js" },
   "main": "dist/index.js",
+  "files": ["dist", "action.yml", "README.md", "LICENSE"],
+  "repository": { "type": "git", "url": "git+https://github.com/derrtaderr/earn-autonomy.git" },
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build && npm test"
   },
   "engines": { "node": ">=18" },
   "dependencies": { "@anthropic-ai/sdk": "^0.30.0" },

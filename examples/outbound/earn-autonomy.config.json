@@ -1,0 +1,10 @@
+{
+  "rules": [{ "name": "no-merge-token" }, { "name": "opt-out-present" }, { "name": "link-validity" }],
+  "rubric": { "dimensions": [
+    { "name": "personalization", "threshold": 7 },
+    { "name": "on-voice", "threshold": 7 },
+    { "name": "claim-grounding", "threshold": 8 },
+    { "name": "icp-relevance", "threshold": 7 }
+  ] },
+  "gateN": 5
+}

@@ -1,0 +1,6 @@
+{
+  "to": "sam@acme.com",
+  "subject": "Quick idea for {{firstName}}",
+  "body": "Hi {{firstName}}, saw {{company}} shipped its new pricing page. We help teams like yours gate agent-sent outreach before it goes out. Worth a look? Reply STOP to unsubscribe.",
+  "fields": { "firstName": "Sam", "company": "Acme" }
+}

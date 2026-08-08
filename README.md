@@ -1,79 +1,112 @@
-# gtm-content-evals
+# earn-autonomy
 
-An eval gate for AI-generated content. Deterministic rules, an LLM rubric, and an autonomy gate that won't let an agent publish unattended until it earns it.
+Eval-gated autonomy for AI agents. Deterministic rules, an LLM rubric, and a streak gate that decides when an agent has earned the right to run unattended.
 
 ## The problem
 
-AI-generated content ships at volume now. Drafting is no longer the bottleneck, which means the failure mode moved downstream. Generic phrasing, off-voice constructions, and ungrounded claims reach the publish button because nothing upstream is checking for them. A human catches some of it by rereading, catches less of it on a Friday afternoon, and catches none of it once an agent is drafting and publishing on its own schedule.
+An agent that drafts content or sends outreach is easy to supervise once. It is much harder to supervise every time, forever, especially once it is running on its own schedule. Most teams solve this by either checking every single output by hand, which does not scale, or by trusting the agent by default, which is how a bad send reaches a real inbox. Neither is a real answer.
 
-This tool gates content the way tests gate a deploy. Content has to pass before it ships, checked against a working practice.
+`earn-autonomy` treats unattended running as something an agent earns, not something it starts with. Every output is checked against rules and a rubric before it goes anywhere. Autonomy only unlocks once a config has strung together enough clean passes in a row, and one bad output resets that streak to zero.
 
-## How it works
+## Install
+
+```bash
+npm install -g earn-autonomy
+# or, without installing
+npx earn-autonomy check <input> --config <path> [--pack content|outbound] [--runlog <path>] [--json]
+```
+
+## How a check runs
 
 Every check runs through three layers.
 
-**Rules.** Deterministic, fast, and cheap. Each rule is a pure function over the text and returns a list of violations. No network call, no ambiguity, no model in the loop. Wrong phrasing gets caught the same way a linter catches a syntax error.
+**Rules.** Deterministic, fast, pure functions over the text. No network call, no ambiguity, no model in the loop. A merge token left unresolved or a missing opt-out line gets caught the same way a linter catches a syntax error.
 
-**Rubric.** An LLM scores the content on named dimensions (voice match, factual grounding, whatever the config defines) against a threshold per dimension. This is where judgment calls live, the stuff a regex can't decide. If scoring fails for any reason (no API key, provider error, network timeout) the gate fails closed to BLOCK. A broken scorer never becomes a free pass.
+**Rubric.** An LLM scores the output on named dimensions (voice match, personalization, claim grounding, whatever the config defines), each against its own threshold. This is where judgment calls live, the stuff a rule cannot decide. If scoring fails for any reason, no API key, a provider error, a timeout, the gate fails closed to `BLOCK`. A broken scorer never becomes a free pass.
 
-**Gate.** Combines rule violations and any failed rubric dimensions into one verdict, PASS or BLOCK, with a full list of reasons. One rule violation is enough to block, same as one failed dimension.
+**Gate.** Combines rule violations and any failed rubric dimensions into one verdict, `PASS` or `BLOCK`, with a full list of reasons. One rule violation is enough to block, same as one failed dimension.
 
-A single PASS doesn't mean an agent gets to publish unattended forever. That's what the autonomy gate is for. Every run gets appended to a local run log keyed by the content's status, timestamp, and a config identity. `clearedForAutonomy` checks whether the current streak of consecutive PASS runs under that config identity has reached the configured `gateN`. One BLOCK resets the streak to zero. An agent earns unattended publishing by stringing together N clean runs in a row, not by passing once.
+## The three exit states
 
-Config identity matters here. If a config sets an explicit `id`, that id is the identity. If it doesn't, the identity is a hash of the rules, rubric, and gate threshold. Change a rule, add a banned phrase, tighten a threshold, and the identity changes with it, which resets the streak to zero. The gate you cleared under yesterday's rules doesn't carry over to today's stricter ones.
+`earn-autonomy check` always ends in one of three states.
 
-## Quickstart
+| State | Exit code | `--json` output |
+|---|---|---|
+| `BLOCK` | `1` | `status: "BLOCK"` |
+| `PASS`, streak not long enough yet | `0` | `status: "PASS"`, `clearedForAutonomy: false` |
+| `PASS`, streak has reached `gateN` | `0` | `status: "PASS"`, `clearedForAutonomy: true` |
 
-```bash
-npm install
-npm run build
-node dist/cli/index.js check examples/sample-draft.md --config examples/jason-voice.rules.json --runlog /tmp/eval-runs.json
+A `BLOCK` is the only state that fails a CI job or a pre-send hook. Both `PASS` states exit `0`, since the content itself is fine either way. `clearedForAutonomy` is the separate signal that answers a different question, whether this config has earned the right to run without a human watching the output.
+
+## Packs
+
+A pack tells `earn-autonomy` how to turn an input file into checkable text, and which rules it can see.
+
+**`content`.** Input is a raw text or markdown file. Ships `no-em-dash`, `no-body-colon`, `no-binary-corrective`, `banned-phrases`, and `link-validity`. Built for drafts headed toward a blog, a newsletter, or a social post.
+
+**`outbound`.** Input is a JSON message (`to`, `subject`, `body`, optional `links`, and a `fields` map for personalization tokens). Merge tokens are resolved from `fields` before the text is checked, so a token whose field is missing or blank is left unresolved on purpose, blank personalization is the same failure as a broken merge. Ships `no-merge-token`, `opt-out-present`, and `link-validity`, plus a default rubric (`personalization`, `on-voice`, `claim-grounding`, `icp-relevance`).
+
+Select a pack with `--pack content` or `--pack outbound`. `content` is the default.
+
+## Worked example, outbound
+
+`examples/outbound/` has a full outbound message, a full config, and a test that runs the message through the built CLI and checks it passes. Start there to see a real input, a real config, and a real verdict end to end. `examples/outbound/README.md` walks through why the example passes and how to change it so it does not.
+
+## GitHub Action
+
+`action.yml` wraps the CLI as a composite action so a pull request can fail on `BLOCK` before anything merges or sends.
+
+```yaml
+# .github/workflows/eval.yml
+name: eval
+on: [pull_request]
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: derrtaderr/earn-autonomy@v0
+        with:
+          input: drafts/message.json
+          config: earn-autonomy.config.json
+          pack: outbound
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 ```
 
-`examples/sample-draft.md` is written to trip two rules on purpose, so a fresh run shows a real block instead of a quiet pass. With no `ANTHROPIC_API_KEY` set, the output looks like this.
+A full copy lives at `examples/ci/eval.yml`.
 
-```
-VERDICT: BLOCK
-  - [no-em-dash] Found 1 em dash(es). Use a period or comma.
-  - [no-body-colon] Colon in body line: "Here is the truth: most teams still measure the wrong thing."
-  - scoring failed (fail closed): ANTHROPIC_API_KEY not set
-clean-run streak: 0/5
-NOT cleared for autonomy
-```
+## Config identity and the streak reset
 
-Set `ANTHROPIC_API_KEY` and the rubric layer scores the content too, adding a per-dimension score line and a real pass-or-fail read against those thresholds instead of the closed-fail scoring line. Exit code is `1` on BLOCK and `0` on PASS, so the check drops straight into a CI step or a pre-publish hook.
+A config is JSON with rules, an optional rubric, and a `gateN`, the clean-run streak required before `clearedForAutonomy` can turn true.
 
-## Config reference
-
-A config is JSON with this shape.
-
-```ts
-type Config = {
-  id?: string;          // explicit identity, falls back to a hash of rules + rubric + gateN
-  rules: RuleConfig[];   // { name: string; params?: unknown }[]
-  rubric?: Rubric;       // { dimensions: { name: string; threshold: number }[] }
-  gateN: number;         // clean-run streak required for autonomous publishing
-};
+```json
+{
+  "id": "outbound-cold-open",
+  "rules": [{ "name": "no-merge-token" }, { "name": "opt-out-present" }],
+  "rubric": { "dimensions": [{ "name": "on-voice", "threshold": 7 }] },
+  "gateN": 5
+}
 ```
 
-Shipped rules, all pure functions over the raw text.
+Every run gets appended to a local run log keyed by the output's status, timestamp, and a config identity. If a config sets an explicit `id`, that id is the identity. If it does not, the identity is a hash of its rules, rubric, and `gateN`. Change a rule, tighten a threshold, or add a banned phrase, and the identity changes with it, which resets the streak to zero. A streak earned under yesterday's rules does not carry over to today's stricter ones.
 
-- `no-em-dash`. Flags any em dash in the content.
-- `no-body-colon`. Flags a colon outside markdown headers, skipping URLs and time stamps like `12:30`.
-- `no-binary-corrective`. Flags the comma-form binary corrective, a setup clause that negates one option followed by a comma-delimited clause that asserts another in its place. Curly and straight apostrophes are normalized before matching, so either form of the construction gets caught.
-- `banned-phrases`. Flags any phrase in a configured list, case-insensitive. Takes a `phrases` array of strings as params.
-- `link-validity`. Resolves every URL in the content with a HEAD request and flags anything that doesn't come back OK.
+## Fail-closed guarantees
 
-The rubric section is optional. Skip it and the gate runs on rules alone. Include it and every dimension needs a score at or above its threshold or the gate blocks.
+Autonomy is a privilege the tool can only take away, never assume. A few guarantees hold regardless of pack or config.
 
-## Known limitations
+- A scoring error of any kind, a missing key, a provider outage, a timeout, produces `BLOCK`, never a silent `PASS`.
+- One rule violation blocks the whole check, even if every rubric dimension scores well.
+- One `BLOCK` resets the clean-run streak to zero, no matter how long the prior streak was.
+- Changing a config's rules, rubric, or `gateN` changes its identity, which starts the streak over rather than quietly inheriting an old one.
 
-`no-binary-corrective` catches the common comma form and normalizes curly apostrophes before matching. The split-sentence form, two separate sentences instead of a comma joining them, still gets through today.
+## What v1 does not do
 
-`no-body-colon` isn't markdown-aware. A colon inside a fenced code block can still trip it, since the rule scans body lines without checking for fence boundaries.
+- No hosted service and no dashboard. It is a CLI and a library, run where the agent already runs.
+- No database. The run log is a single local JSON file.
+- No provider abstraction. Scoring goes through the Claude API only, via `@anthropic-ai/sdk`.
+- No auto-remediation. `earn-autonomy` decides `PASS` or `BLOCK` and reports why. It does not rewrite the content and try again.
 
-The run log is a single local JSON file with a non-atomic append (read the whole file, push a record, write the whole file back). That's fine for one user running checks locally. Two processes writing to the same run log at once can lose a record.
+## License
 
-## Dogfood note
-
-This repo ships configured with the author's own voice rules in `examples/jason-voice.rules.json`, the same file that produces the block above. Swap it for your own rules, your own banned phrases, your own rubric dimensions. The gate doesn't care whose voice it's enforcing, only that the content earns its pass.
+MIT
