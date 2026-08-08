@@ -10,11 +10,18 @@ describe('config', () => {
   it('throws on missing rules array', () => {
     expect(() => parseConfig({ rubric: { dimensions: [] } })).toThrow(/rules/);
   });
-  it('uses an explicit id as identity', () => {
-    expect(configIdentity({ id: 'jason-voice', rules: [], gateN: 5 })).toBe('jason-voice');
+  it('prefixes an explicit id onto the content hash', () => {
+    const identity = configIdentity({ id: 'jason-voice', rules: [], gateN: 5 });
+    expect(identity.startsWith('jason-voice:')).toBe(true);
+    expect(identity).not.toBe('jason-voice');
   });
   it('hashes the config when no id, stable across calls', () => {
     const c = { rules: [{ name: 'no-em-dash' }], gateN: 5 };
     expect(configIdentity(c)).toBe(configIdentity(c));
+  });
+  it('same id with changed rules produces a different identity', () => {
+    const before = configIdentity({ id: 'jason-voice', rules: [{ name: 'no-em-dash' }], gateN: 5 });
+    const after = configIdentity({ id: 'jason-voice', rules: [{ name: 'no-em-dash' }, { name: 'no-body-colon' }], gateN: 5 });
+    expect(before).not.toBe(after);
   });
 });

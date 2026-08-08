@@ -13,7 +13,7 @@ export function parseConfig(raw: unknown): Config {
 }
 
 export function configIdentity(config: Config): string {
-  if (config.id) return config.id;
   const canonical = JSON.stringify({ rules: config.rules, rubric: config.rubric, gateN: config.gateN });
-  return createHash('sha256').update(canonical).digest('hex').slice(0, 12);
+  const hash = createHash('sha256').update(canonical).digest('hex').slice(0, 12);
+  return config.id ? `${config.id}:${hash}` : hash;
 }

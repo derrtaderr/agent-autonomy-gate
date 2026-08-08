@@ -97,7 +97,7 @@ A config is JSON with rules, an optional rubric, and a `gateN`, the clean-run st
 }
 ```
 
-Every run gets appended to a local run log keyed by the output's status, timestamp, and a config identity. If a config sets an explicit `id`, that id is the identity. If it does not, the identity is a hash of its rules, rubric, and `gateN`. Change a rule, tighten a threshold, or add a banned phrase, and the identity changes with it, which resets the streak to zero. A streak earned under yesterday's rules does not carry over to today's stricter ones.
+Every run gets appended to a local run log keyed by the output's status, timestamp, and a config identity. The identity is always a hash of the config's rules, rubric, and `gateN`. An explicit `id` is a human label, not a substitute for the hash, so it gets prefixed onto the hash rather than replacing it. Change a rule, tighten a threshold, or add a banned phrase, and the hash changes with it, which resets the streak to zero even under a fixed `id`. A streak earned under yesterday's rules does not carry over to today's stricter ones.
 
 ## Fail-closed guarantees
 
@@ -106,7 +106,7 @@ Autonomy is a privilege the tool can only take away, never assume. A few guarant
 - A scoring error of any kind, a missing key, a provider outage, a timeout, produces `BLOCK`, never a silent `PASS`.
 - One rule violation blocks the whole check, even if every rubric dimension scores well.
 - One `BLOCK` resets the clean-run streak to zero, no matter how long the prior streak was.
-- Changing a config's rules, rubric, or `gateN` changes its identity, which starts the streak over rather than quietly inheriting an old one.
+- Changing a config's rules, rubric, or `gateN` changes its identity, even under a fixed `id`, which starts the streak over rather than quietly inheriting an old one.
 
 ## What leaves your machine, what it costs
 
