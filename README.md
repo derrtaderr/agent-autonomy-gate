@@ -136,6 +136,8 @@ Autonomy is a privilege the tool can only take away, never assume. A few guarant
 
 **Busy agents.** The runlog rewrites fully on each run. Past roughly ten thousand runs, rotate or delete it, the streak restarts conservatively.
 
+**Path matters for schedulers.** Agents and cron jobs should pass `--runlog` with an absolute path, since the default is relative to the current working directory and a scheduler that changes its working directory between runs starts a separate streak without warning.
+
 ## What v1 does not do
 
 - No hosted service and no dashboard. It is a CLI and a library, run where the agent already runs.

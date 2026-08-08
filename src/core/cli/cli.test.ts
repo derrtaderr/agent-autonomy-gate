@@ -1,12 +1,13 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { writeFile, mkdtemp } from 'node:fs/promises';
+import { readFile, writeFile, mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const pexec = promisify(execFile);
 const CLI = new URL('../../../dist/core/cli/index.js', import.meta.url).pathname;
+const PKG = new URL('../../../package.json', import.meta.url).pathname;
 
 async function run(args: string[]) {
   try {
@@ -40,7 +41,9 @@ describe('cli', () => {
     await writeFile(cfg, JSON.stringify({ rules: [{ name: 'no-em-dash' }], gateN: 1 }));
     const { code, stdout } = await run(['check', doc, '--config', cfg, '--pack', 'content', '--runlog', log, '--json']);
     expect(code).toBe(0);
-    expect(JSON.parse(stdout).clearedForAutonomy).toBe(true); // gateN=1, one PASS clears it
+    const parsed = JSON.parse(stdout);
+    expect(parsed.clearedForAutonomy).toBe(true); // gateN=1, one PASS clears it
+    expect(parsed.runlog).toBe(log);
   });
 
   it('exits 2 with a message when --pack is omitted', async () => {
@@ -51,5 +54,38 @@ describe('cli', () => {
     const { code, stderr } = await run(['check', doc, '--config', cfg]);
     expect(code).toBe(2);
     expect(stderr).toContain('Missing --pack. Available: content, outbound');
+  });
+
+  it('--version prints the package version and exits 0', async () => {
+    const { code, stdout } = await run(['--version']);
+    const pkg = JSON.parse(await readFile(PKG, 'utf8'));
+    expect(code).toBe(0);
+    expect(stdout.trim()).toBe(pkg.version);
+  });
+
+  it('-v also prints the package version', async () => {
+    const { code, stdout } = await run(['-v']);
+    const pkg = JSON.parse(await readFile(PKG, 'utf8'));
+    expect(code).toBe(0);
+    expect(stdout.trim()).toBe(pkg.version);
+  });
+
+  it('missing input file prints a friendly error and exits 2', async () => {
+    const cfg = join(dir, 'cfg4.json');
+    await writeFile(cfg, JSON.stringify({ rules: [{ name: 'no-em-dash' }], gateN: 1 }));
+    const missing = join(dir, 'does-not-exist.txt');
+    const { code, stderr } = await run(['check', missing, '--config', cfg, '--pack', 'content']);
+    expect(code).toBe(2);
+    expect(stderr).toContain(`Cannot read ${missing}. Check the path.`);
+  });
+
+  it('malformed config JSON prints a friendly error and exits 2', async () => {
+    const doc = join(dir, 'doc5.txt');
+    const cfg = join(dir, 'cfg5.json');
+    await writeFile(doc, 'clean copy');
+    await writeFile(cfg, '{ not valid json');
+    const { code, stderr } = await run(['check', doc, '--config', cfg, '--pack', 'content']);
+    expect(code).toBe(2);
+    expect(stderr).toContain(`Invalid JSON in ${cfg}:`);
   });
 });

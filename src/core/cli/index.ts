@@ -14,7 +14,40 @@ function arg(flag: string): string | undefined {
 }
 function has(flag: string): boolean { return process.argv.includes(flag); }
 
+async function readTextFriendly(path: string): Promise<string> {
+  try {
+    return await readFile(path, 'utf8');
+  } catch (e: any) {
+    if (e && e.code === 'ENOENT') {
+      console.error(`Cannot read ${path}. Check the path.`);
+      process.exit(2);
+    }
+    throw e;
+  }
+}
+
+function parseJsonFriendly(raw: string, path: string): any {
+  try {
+    return JSON.parse(raw);
+  } catch (e: any) {
+    console.error(`Invalid JSON in ${path}: ${e.message}`);
+    process.exit(2);
+  }
+}
+
+async function printVersion(): Promise<void> {
+  const pkgUrl = new URL('../../../package.json', import.meta.url);
+  const pkg = JSON.parse(await readFile(pkgUrl, 'utf8'));
+  console.log(pkg.version);
+  process.exit(0);
+}
+
 async function main() {
+  if (has('--version') || has('-v')) {
+    await printVersion();
+    return;
+  }
+
   const cmd = process.argv[2];
   const file = process.argv[3];
   if (cmd !== 'check' || !file || file.startsWith('--')) {
@@ -29,11 +62,12 @@ async function main() {
   const asJson = has('--json');
 
   const pack = getPack(packId);
-  const raw = await readFile(file, 'utf8');
-  const input = pack.inputKind === 'text' ? raw : JSON.parse(raw);
+  const raw = await readTextFriendly(file);
+  const input = pack.inputKind === 'text' ? raw : parseJsonFriendly(raw, file);
   const text = pack.prepare(input);
 
-  const config: Config = parseConfig(JSON.parse(await readFile(configPath, 'utf8')));
+  const configRaw = await readTextFriendly(configPath);
+  const config: Config = parseConfig(parseJsonFriendly(configRaw, configPath));
   if (!config.rubric && pack.defaultRubric) config.rubric = pack.defaultRubric;
 
   const key = process.env.ANTHROPIC_API_KEY;
@@ -59,9 +93,10 @@ async function main() {
       streak,
       gateN: config.gateN,
       clearedForAutonomy: cleared,
+      runlog: runlogPath,
     }, null, 2));
   } else {
-    console.log(renderVerdict(verdict, streak, config.gateN));
+    console.log(renderVerdict(verdict, streak, config.gateN, runlogPath));
   }
   process.exit(verdict.status === 'BLOCK' ? 1 : 0);
 }

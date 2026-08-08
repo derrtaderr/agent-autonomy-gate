@@ -1,7 +1,7 @@
 import type { Verdict } from '../types.js';
 import { clearedForAutonomy } from '../runlog/index.js';
 
-export function renderVerdict(verdict: Verdict, streak: number, gateN: number): string {
+export function renderVerdict(verdict: Verdict, streak: number, gateN: number, runlogPath: string): string {
   const lines: string[] = [];
   lines.push(`VERDICT: ${verdict.status}`);
   for (const r of verdict.reasons) lines.push(`  - ${r}`);
@@ -12,5 +12,6 @@ export function renderVerdict(verdict: Verdict, streak: number, gateN: number): 
   } else {
     lines.push('NOT cleared for autonomy');
   }
+  lines.push(`runlog: ${runlogPath}`);
   return lines.join('\n');
 }
