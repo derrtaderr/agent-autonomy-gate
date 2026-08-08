@@ -10,7 +10,7 @@ A single outbound message, checked against the `outbound` pack before it goes ou
 
 ## Run it yourself
 
-Rules only, no key required:
+Rules only, no key required.
 
 ```bash
 npm run build
@@ -19,7 +19,7 @@ node dist/core/cli/index.js check examples/outbound/message.json \
   --pack outbound --json
 ```
 
-That command includes the rubric from `earn-autonomy.config.json`, so set `ANTHROPIC_API_KEY` first or the run will fail closed to `BLOCK` on the scoring step. Drop `link-validity` and the rubric from a copy of the config to check rules only, the way `example.test.ts` does.
+That command includes the rubric from `earn-autonomy.config.json`, so set `ANTHROPIC_API_KEY` first or the run will fail closed to `BLOCK` on the scoring step. To check rules only without a key, copy the config and replace the rubric with an empty one, `"rubric": { "dimensions": [] }`, the way `example.test.ts` does. Omitting the `rubric` key entirely does not work for this, the outbound pack backfills its own default rubric when a config has none, which still needs a key.
 
 ## Why this message passes
 
