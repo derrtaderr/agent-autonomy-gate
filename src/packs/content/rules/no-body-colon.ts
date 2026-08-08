@@ -1,4 +1,4 @@
-import type { RuleFn, Violation } from '../types.js';
+import type { RuleFn, Violation } from '../../../core/types.js';
 
 export const noBodyColon: RuleFn = (text) => {
   const violations: Violation[] = [];

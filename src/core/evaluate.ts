@@ -1,5 +1,5 @@
 import type { Config, Verdict, RuleFn, LLMProvider, Scores } from './types.js';
-import { runRules } from './rules/index.js';
+import { runRules } from './rules/run.js';
 import { scoreContent } from './scoring/index.js';
 import { evaluateGate } from './gate/index.js';
 

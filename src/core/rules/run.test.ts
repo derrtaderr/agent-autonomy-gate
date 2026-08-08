@@ -1,8 +1,16 @@
 import { describe, it, expect } from 'vitest';
-import { buildRuleRegistry, runRules } from './index.js';
+import { runRules } from './run.js';
+import type { RuleFn } from '../types.js';
 
-describe('rule registry', () => {
-  const registry = buildRuleRegistry({ linkChecker: async () => true });
+const registry: Record<string, RuleFn> = {
+  'no-em-dash': (text) => (text.includes('—') ? [{ rule: 'no-em-dash', message: 'em dash' }] : []),
+  'banned-phrases': (text, params) => {
+    const phrases = (params as { phrases?: string[] } | undefined)?.phrases ?? [];
+    return phrases.filter((p) => text.includes(p)).map((p) => ({ rule: 'banned-phrases', message: p }));
+  },
+};
+
+describe('runRules', () => {
   it('runs selected rules and aggregates violations', async () => {
     const v = await runRules('It uses an em dash —.', [{ name: 'no-em-dash' }], registry);
     expect(v).toHaveLength(1);

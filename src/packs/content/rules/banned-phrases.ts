@@ -1,4 +1,4 @@
-import type { RuleFn } from '../types.js';
+import type { RuleFn } from '../../../core/types.js';
 
 export const bannedPhrases: RuleFn = (text, params) => {
   const phrases = (params as { phrases?: string[] } | undefined)?.phrases ?? [];

@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { evaluate } from './evaluate.js';
-import { buildRuleRegistry } from './rules/index.js';
+import type { RuleFn } from './types.js';
 
-const registry = buildRuleRegistry({ linkChecker: async () => true });
+const registry: Record<string, RuleFn> = {
+  'no-em-dash': (text) => (text.includes('—') ? [{ rule: 'no-em-dash', message: 'em dash' }] : []),
+};
 const config = {
   rules: [{ name: 'no-em-dash' }],
   rubric: { dimensions: [{ name: 'voice-match', threshold: 7 }] },

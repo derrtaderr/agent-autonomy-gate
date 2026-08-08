@@ -4,7 +4,7 @@
   "description": "Eval-gated autonomy: deterministic rules + LLM rubric + an N-clean-runs gate that decides when an AI agent has earned unattended runs.",
   "type": "module",
   "license": "MIT",
-  "bin": { "earn-autonomy": "dist/cli/index.js" },
+  "bin": { "earn-autonomy": "dist/core/cli/index.js" },
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

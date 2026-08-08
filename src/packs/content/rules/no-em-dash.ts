@@ -1,4 +1,4 @@
-import type { RuleFn } from '../types.js';
+import type { RuleFn } from '../../../core/types.js';
 
 export const noEmDash: RuleFn = (text) => {
   const matches = text.match(/—/g);

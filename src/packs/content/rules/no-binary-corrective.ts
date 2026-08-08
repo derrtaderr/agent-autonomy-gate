@@ -1,4 +1,4 @@
-import type { RuleFn, Violation } from '../types.js';
+import type { RuleFn, Violation } from '../../../core/types.js';
 
 // Heuristic: catches the common "it's not X, it's Y" and "not X, it's Y" forms.
 // Not exhaustive by design; the deterministic rules are a first-pass gate.

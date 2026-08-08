@@ -2,8 +2,7 @@
 import { readFile } from 'node:fs/promises';
 import type { LLMProvider } from '../types.js';
 import { parseConfig, configIdentity } from '../config/index.js';
-import { buildRuleRegistry } from '../rules/index.js';
-import { defaultLinkChecker } from '../rules/link-validity.js';
+import { getPack } from '../../packs/index.js';
 import { makeClaudeProvider } from '../scoring/claude-provider.js';
 import { evaluate } from '../evaluate.js';
 import { appendRun, readRuns, computeStreak } from '../runlog/index.js';
@@ -27,7 +26,7 @@ async function main() {
 
   const content = await readFile(file, 'utf8');
   const config = parseConfig(JSON.parse(await readFile(configPath, 'utf8')));
-  const registry = buildRuleRegistry({ linkChecker: defaultLinkChecker });
+  const registry = getPack('content').registry;
 
   const key = process.env.ANTHROPIC_API_KEY;
   const provider: LLMProvider = key
