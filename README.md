@@ -108,6 +108,16 @@ Autonomy is a privilege the tool can only take away, never assume. A few guarant
 - One `BLOCK` resets the clean-run streak to zero, no matter how long the prior streak was.
 - Changing a config's rules, rubric, or `gateN` changes its identity, which starts the streak over rather than quietly inheriting an old one.
 
+## What leaves your machine, what it costs
+
+**Egress.** The rubric call sends the checked content to Anthropic under your own key. The link-validity rule sends HEAD requests to every URL found in the checked content, so poisoned input can make the tool ping URLs you did not choose. Enable it knowingly.
+
+**The runlog is not content-free.** Reasons can quote fragments of checked content such as a bad URL or an unresolved token. It stays on your machine and is yours.
+
+**Cost.** One model call per check when a rubric is configured, and there is no spend cap inside the tool. Set a budget limit in your Anthropic console. Rules-only configs cost nothing and need no key.
+
+**Busy agents.** The runlog rewrites fully on each run. Past roughly ten thousand runs, rotate or delete it, the streak restarts conservatively.
+
 ## What v1 does not do
 
 - No hosted service and no dashboard. It is a CLI and a library, run where the agent already runs.
