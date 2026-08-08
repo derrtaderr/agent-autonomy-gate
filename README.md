@@ -58,7 +58,25 @@ Put compliance-critical checks in rules, an opt-out line that has to be present,
 
 ## Worked example, outbound
 
-`examples/outbound/` has a full outbound message, a full config, and a test that runs the message through the built CLI and checks it passes. Start there to see a real input, a real config, and a real verdict end to end. `examples/outbound/README.md` walks through why the example passes and how to change it so it does not.
+`examples/outbound/` has a full outbound message, a full config, and a test that runs the message through the built CLI and checks it passes. It ships inside the installed npm package at the same path, `node_modules/earn-autonomy/examples/outbound`, and in the repo, so there is no separate download step. `examples/outbound/README.md` walks through why the example passes and how to change it so it does not.
+
+### Keyless quickstart
+
+No `ANTHROPIC_API_KEY` needed for this one. Point the CLI at the shipped `examples/outbound/message.json` with a rules-only config like this.
+
+```json
+{
+  "rules": [{ "name": "no-merge-token" }, { "name": "opt-out-present" }],
+  "rubric": { "dimensions": [] },
+  "gateN": 5
+}
+```
+
+```bash
+npx earn-autonomy check node_modules/earn-autonomy/examples/outbound/message.json --config config.json --pack outbound --json
+```
+
+An empty `rubric.dimensions` array skips the model call entirely, so nothing leaves your machine and no key is required. Omitting the `rubric` key instead of setting it empty pulls in the pack's default rubric, which does call the model and needs a key.
 
 ## GitHub Action
 

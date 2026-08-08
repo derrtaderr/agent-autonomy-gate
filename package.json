@@ -6,7 +6,7 @@
   "license": "MIT",
   "bin": { "earn-autonomy": "dist/core/cli/index.js" },
   "main": "dist/index.js",
-  "files": ["dist", "action.yml", "README.md", "LICENSE"],
+  "files": ["dist", "action.yml", "README.md", "LICENSE", "examples/outbound", "!examples/outbound/*.test.ts"],
   "repository": { "type": "git", "url": "git+https://github.com/derrtaderr/earn-autonomy.git" },
   "scripts": {
     "prebuild": "rm -rf dist",
