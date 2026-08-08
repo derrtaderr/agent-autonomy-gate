@@ -48,6 +48,14 @@ A pack tells `earn-autonomy` how to turn an input file into checkable text, and 
 
 Select a pack with `--pack content` or `--pack outbound`. `content` is the default.
 
+## Rules are the floor
+
+Deterministic rules cannot be overridden by rubric scores. One rule violation blocks the check no matter what the judge says about the rest of the content.
+
+The rubric is an advisory quality layer. Like any LLM judge, it can be manipulated by adversarial content, a prompt buried in the text it is scoring, a claim that flatters the model, a request to rate everything a 10. `earn-autonomy` treats the rubric that way on purpose and never lets it outrank a rule.
+
+Put compliance-critical checks in rules, an opt-out line that has to be present, a merge token that has to be resolved, a link that has to work. Use the rubric for quality dimensions where a fooled score costs you polish, voice match, personalization, tone, not compliance.
+
 ## Worked example, outbound
 
 `examples/outbound/` has a full outbound message, a full config, and a test that runs the message through the built CLI and checks it passes. Start there to see a real input, a real config, and a real verdict end to end. `examples/outbound/README.md` walks through why the example passes and how to change it so it does not.
