@@ -18,7 +18,7 @@ async function main() {
   const cmd = process.argv[2];
   const file = process.argv[3];
   if (cmd !== 'check' || !file || file.startsWith('--')) {
-    console.error('Usage: evalgate check <input> --config <path> [--pack content|outbound] [--runlog <path>] [--json]');
+    console.error('Usage: earn-autonomy check <input> --config <path> [--pack content|outbound] [--runlog <path>] [--json]');
     process.exit(2);
   }
   const configPath = arg('--config');
@@ -29,7 +29,7 @@ async function main() {
 
   const pack = getPack(packId);
   const raw = await readFile(file, 'utf8');
-  const input = packId === 'content' ? raw : JSON.parse(raw);
+  const input = pack.inputKind === 'text' ? raw : JSON.parse(raw);
   const text = pack.prepare(input);
 
   const config: Config = parseConfig(JSON.parse(await readFile(configPath, 'utf8')));
@@ -61,7 +61,6 @@ async function main() {
     }, null, 2));
   } else {
     console.log(renderVerdict(verdict, streak, config.gateN));
-    console.log(`clearedForAutonomy: ${cleared}`);
   }
   process.exit(verdict.status === 'BLOCK' ? 1 : 0);
 }

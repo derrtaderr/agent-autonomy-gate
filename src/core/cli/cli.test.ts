@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { writeFile, mkdtemp, rm } from 'node:fs/promises';
+import { writeFile, mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -19,7 +19,7 @@ async function run(args: string[]) {
 
 describe('cli', () => {
   let dir: string;
-  beforeAll(async () => { dir = await mkdtemp(join(tmpdir(), 'evalgate-')); });
+  beforeAll(async () => { dir = await mkdtemp(join(tmpdir(), 'earn-autonomy-')); });
 
   it('outbound: BLOCKs an unresolved token, exit 1, json flag surfaces cleared=false', async () => {
     const msg = join(dir, 'msg.json');

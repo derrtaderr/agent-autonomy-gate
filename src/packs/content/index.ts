@@ -14,5 +14,5 @@ export function contentPack(): Pack<string> {
     'no-binary-corrective': noBinaryCorrective,
     'link-validity': makeLinkValidity(defaultLinkChecker),
   };
-  return { id: 'content', prepare: (input) => input, registry };
+  return { id: 'content', inputKind: 'text', prepare: (input) => input, registry };
 }

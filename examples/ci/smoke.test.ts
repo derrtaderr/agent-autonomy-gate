@@ -10,7 +10,7 @@ const CLI = new URL('../../dist/core/cli/index.js', import.meta.url).pathname;
 
 describe('action command', () => {
   it('exits non-zero on BLOCK so the CI job fails', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'evalgate-ci-'));
+    const dir = await mkdtemp(join(tmpdir(), 'earn-autonomy-ci-'));
     const doc = join(dir, 'd.txt');
     const cfg = join(dir, 'c.json');
     await writeFile(doc, 'text with an em dash — here');

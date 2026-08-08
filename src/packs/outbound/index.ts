@@ -14,6 +14,7 @@ export function outboundPack(): Pack<OutboundMessage> {
   };
   return {
     id: 'outbound',
+    inputKind: 'json',
     prepare: prepareOutbound,
     registry,
     defaultRubric: {

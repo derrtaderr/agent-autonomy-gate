@@ -9,6 +9,7 @@
   "files": ["dist", "action.yml", "README.md", "LICENSE"],
   "repository": { "type": "git", "url": "git+https://github.com/derrtaderr/earn-autonomy.git" },
   "scripts": {
+    "prebuild": "rm -rf dist",
     "build": "tsc",
     "test": "vitest run",
     "test:watch": "vitest",
