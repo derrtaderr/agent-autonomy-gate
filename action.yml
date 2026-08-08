@@ -3,7 +3,7 @@ description: Gate AI-generated output on deterministic rules + an LLM rubric, an
 inputs:
   input:   { description: Path to the input file (text for content, JSON for outbound), required: true }
   config:  { description: Path to the eval config JSON, required: true }
-  pack:    { description: Pack id (content|outbound), required: false, default: content }
+  pack:    { description: Pack id (content|outbound), required: true }
   runlog:  { description: Path to the run log, required: false, default: .eval-runs.json }
 runs:
   using: composite

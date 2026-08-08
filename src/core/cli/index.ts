@@ -18,12 +18,13 @@ async function main() {
   const cmd = process.argv[2];
   const file = process.argv[3];
   if (cmd !== 'check' || !file || file.startsWith('--')) {
-    console.error('Usage: earn-autonomy check <input> --config <path> [--pack content|outbound] [--runlog <path>] [--json]');
+    console.error('Usage: earn-autonomy check <input> --config <path> --pack <content|outbound> [--runlog <path>] [--json]');
     process.exit(2);
   }
   const configPath = arg('--config');
   if (!configPath) { console.error('Missing --config'); process.exit(2); }
-  const packId = arg('--pack') ?? 'content';
+  const packId = arg('--pack');
+  if (!packId) { console.error('Missing --pack. Available: content, outbound'); process.exit(2); }
   const runlogPath = arg('--runlog') ?? '.eval-runs.json';
   const asJson = has('--json');
 

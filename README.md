@@ -13,7 +13,7 @@ An agent that drafts content or sends outreach is easy to supervise once. It is 
 ```bash
 npm install -g earn-autonomy
 # or, without installing
-npx earn-autonomy check <input> --config <path> [--pack content|outbound] [--runlog <path>] [--json]
+npx earn-autonomy check <input> --config <path> --pack <content|outbound> [--runlog <path>] [--json]
 ```
 
 ## How a check runs
@@ -46,7 +46,7 @@ A pack tells `earn-autonomy` how to turn an input file into checkable text, and 
 
 **`outbound`.** Input is a JSON message (`to`, `subject`, `body`, optional `links`, and a `fields` map for personalization tokens). Merge tokens are resolved from `fields` before the text is checked, so a token whose field is missing or blank is left unresolved on purpose, blank personalization is the same failure as a broken merge. Ships `no-merge-token`, `opt-out-present`, and `link-validity`, plus a default rubric (`personalization`, `on-voice`, `claim-grounding`, `icp-relevance`).
 
-Select a pack with `--pack content` or `--pack outbound`. `content` is the default.
+`--pack` is required. Pass `--pack content` or `--pack outbound` on every invocation, there is no default, so outbound JSON never gets silently scored as prose.
 
 ## Rules are the floor
 
