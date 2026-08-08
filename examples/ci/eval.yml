@@ -1,6 +1,7 @@
 # examples/ci/eval.yml — copy into .github/workflows/ in a consumer repo
 name: eval
 on: [pull_request]
+permissions: {}
 jobs:
   gate:
     runs-on: ubuntu-latest

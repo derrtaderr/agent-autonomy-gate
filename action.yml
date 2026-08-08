@@ -11,4 +11,4 @@ runs:
     - uses: actions/setup-node@v4
       with: { node-version: '20' }
     - shell: bash
-      run: npx --yes earn-autonomy check "${{ inputs.input }}" --config "${{ inputs.config }}" --pack "${{ inputs.pack }}" --runlog "${{ inputs.runlog }}" --json
+      run: npx --yes earn-autonomy@0 check "${{ inputs.input }}" --config "${{ inputs.config }}" --pack "${{ inputs.pack }}" --runlog "${{ inputs.runlog }}" --json
