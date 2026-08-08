@@ -1,0 +1,50 @@
+# canary keeps earn-autonomy honest between real usage. The rules-only job runs the
+# built CLI against the worked example using nothing but deterministic rules, no secret
+# needed, and must always pass. The rubric job runs the same example through the real
+# Claude judge when the ANTHROPIC_API_KEY secret is set, and skips itself cleanly with
+# a warning when it is not.
+name: canary
+
+on:
+  schedule:
+    - cron: '0 14 * * 1'
+  workflow_dispatch:
+
+jobs:
+  rules-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm ci
+      - run: npm run build
+      - name: Rules-only check against the worked example
+        run: |
+          cat > /tmp/rules-only.config.json <<'CFG'
+          {"rules":[{"name":"no-merge-token"},{"name":"opt-out-present"}],"rubric":{"dimensions":[]},"gateN":5}
+          CFG
+          node dist/core/cli/index.js check examples/outbound/message.json --config /tmp/rules-only.config.json --pack outbound --json
+
+  rubric:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm ci
+      - run: npm run build
+      - name: Check for the rubric secret
+        id: secret-check
+        run: |
+          if [ -z "${{ secrets.ANTHROPIC_API_KEY }}" ]; then
+            echo "::warning::rubric canary skipped, ANTHROPIC_API_KEY secret not set"
+            echo "has_key=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_key=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Rubric check against the worked example
+        if: steps.secret-check.outputs.has_key == 'true'
+        run: node dist/core/cli/index.js check examples/outbound/message.json --config examples/outbound/earn-autonomy.config.json --pack outbound --json
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
