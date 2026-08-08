@@ -10,4 +10,5 @@ export { appendRun, readRuns, computeStreak, clearedForAutonomy } from './core/r
 export { parseConfig, configIdentity } from './core/config/index.js';
 export { renderVerdict } from './core/cli/render.js';
 export { contentPack } from './packs/content/index.js';
+export { outboundPack } from './packs/outbound/index.js';
 export { getPack } from './packs/index.js';
