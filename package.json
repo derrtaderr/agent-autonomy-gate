@@ -1,0 +1,17 @@
+{
+  "name": "earn-autonomy",
+  "version": "0.1.0",
+  "description": "Eval-gated autonomy: deterministic rules + LLM rubric + an N-clean-runs gate that decides when an AI agent has earned unattended runs.",
+  "type": "module",
+  "license": "MIT",
+  "bin": { "earn-autonomy": "dist/cli/index.js" },
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": { "@anthropic-ai/sdk": "^0.30.0" },
+  "devDependencies": { "typescript": "^5.4.0", "vitest": "^1.6.0", "@types/node": "^20.0.0" }
+}

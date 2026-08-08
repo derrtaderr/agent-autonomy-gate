@@ -1,0 +1,12 @@
+{
+  "id": "jason-voice",
+  "gateN": 5,
+  "rules": [
+    { "name": "no-em-dash" },
+    { "name": "no-body-colon" },
+    { "name": "no-binary-corrective" },
+    { "name": "banned-phrases", "params": { "phrases": ["passionate", "thrilled", "would love", "looking forward to hearing", "I'm writing to apply", "I believe"] } },
+    { "name": "link-validity" }
+  ],
+  "rubric": { "dimensions": [ { "name": "voice-match", "threshold": 7 }, { "name": "factual-grounding", "threshold": 7 } ] }
+}
