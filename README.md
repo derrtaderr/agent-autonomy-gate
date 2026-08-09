@@ -56,27 +56,56 @@ The rubric is an advisory quality layer. Like any LLM judge, it can be manipulat
 
 Put compliance-critical checks in rules, an opt-out line that has to be present, a merge token that has to be resolved, a link that has to work. Use the rubric for quality dimensions where a fooled score costs you polish, voice match, personalization, tone, not compliance.
 
-## Worked example, outbound
-
-`examples/outbound/` has a full outbound message, a full config, and a test that runs the message through the built CLI and checks it passes. It ships inside the installed npm package at the same path, `node_modules/earn-autonomy/examples/outbound`, and in the repo, so there is no separate download step. `examples/outbound/README.md` walks through why the example passes and how to change it so it does not.
-
 ### Keyless quickstart
 
-No `ANTHROPIC_API_KEY` needed for this one. Point the CLI at the shipped `examples/outbound/message.json` with a rules-only config like this.
+No `ANTHROPIC_API_KEY` needed for this one, and nothing to install or clone first. Save these two files yourself.
+
+`message.json`
+
+```json
+{
+  "to": "sam@acme.com",
+  "subject": "Quick idea for {{firstName}}",
+  "body": "Hi {{firstName}}, saw {{company}} shipped its new pricing page. We help teams like yours gate agent-sent outreach before it goes out. Worth a look? Reply STOP to unsubscribe.",
+  "fields": { "firstName": "Sam", "company": "Acme" }
+}
+```
+
+`config.json`
 
 ```json
 {
   "rules": [{ "name": "no-merge-token" }, { "name": "opt-out-present" }],
   "rubric": { "dimensions": [] },
-  "gateN": 5
+  "gateN": 3
 }
 ```
 
+Then check it.
+
 ```bash
-npx earn-autonomy check node_modules/earn-autonomy/examples/outbound/message.json --config config.json --pack outbound --json
+earn-autonomy check message.json --config config.json --pack outbound --json
+# or, without installing
+npx earn-autonomy@0 check message.json --config config.json --pack outbound --json
 ```
 
-An empty `rubric.dimensions` array skips the model call entirely, so nothing leaves your machine and no key is required. Omitting the `rubric` key instead of setting it empty pulls in the pack's default rubric, which does call the model and needs a key.
+Both `{{firstName}}` and `{{company}}` resolve from `fields`, and the body ends with "Reply STOP to unsubscribe," so the check passes with no violations. An empty `rubric.dimensions` array skips the model call entirely, so nothing leaves your machine and no key is required. Omitting the `rubric` key instead of setting it empty pulls in the pack's default rubric, which does call the model and needs a key.
+
+## Worked example, outbound
+
+`examples/outbound/` has a full outbound message, a full config, and a test that runs the message through the built CLI and checks it passes. It ships inside the installed npm package, and in the repo, so there is no separate download step. `examples/outbound/README.md` walks through why the example passes and how to change it so it does not.
+
+Neither install method leaves you a `node_modules/earn-autonomy` you can run scripts inside safely, so copy the example folder out before touching it.
+
+```bash
+# local install (npm install earn-autonomy)
+cp -r "$(npm root)/earn-autonomy/examples/outbound" .
+
+# global install (npm install -g earn-autonomy)
+cp -r "$(npm root -g)/earn-autonomy/examples/outbound" .
+```
+
+Once it is copied out, `cd` into your copy and follow `examples/outbound/README.md` from there.
 
 ## GitHub Action
 
@@ -100,7 +129,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 ```
 
-A full copy lives at `examples/ci/eval.yml`.
+The full workflow file lives in the GitHub repo at `examples/ci/eval.yml`. It does not ship inside the npm package, so pull it from the repo rather than `node_modules`.
 
 ## Config identity and the streak reset
 
