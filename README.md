@@ -1,5 +1,4 @@
-# earn-autonomy
-
+# agent-autonomy-gate
 Eval-gated autonomy for AI agents. Deterministic rules, an LLM rubric, and a streak gate that decides when an agent has earned the right to run unattended.
 
 ## The problem
@@ -120,7 +119,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: derrtaderr/earn-autonomy@v0
+      - uses: derrtaderr/agent-autonomy-gate@v0
         with:
           input: drafts/message.json
           config: earn-autonomy.config.json
